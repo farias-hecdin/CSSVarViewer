@@ -1,7 +1,6 @@
 local M = {}
 local vim = vim
 local cfg = require('CSSVarViewer.misc.config')
-local log = require('CSSVarViewer.log').info
 local cph = require('CSSPluginHelpers')
 
 local values_from_file = {}
@@ -28,7 +27,7 @@ M.setup = function(options)
   M.show_virtual_text()
 end
 
-
+--- Create a user command
 vim.api.nvim_create_user_command("CSSVarViewer", function(args)
   if #(args.fargs[1] or "") > 1 then
     args.fargs[1], args.fargs[2], args.fargs[3] = 1, args.fargs[1], args.fargs[2]
@@ -41,19 +40,19 @@ vim.api.nvim_create_user_command("CSSVarViewer", function(args)
   M.get_cssvar_from_file(search_opts.attempt_limit, search_opts.fname, search_opts.fdir)
 end, {desc = "Track the values of the CSS variables", nargs = "*"})
 
-
+--- Gets CSS variables from a file
 M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
   local fpath = cph.find_file(fname, fdir, 1, attempt_limit)
   if not fpath then
     vim.print("[CSSVarHighlight] Attempt limit reached. Operation cancelled.")
     return
   end
-
+  -- Extract CSS attributes (variables) from the file
   local data = cph.get_css_attribute(fpath, "%-%-[-_%w]*")
   values_from_file = data
 end
 
-
+--- Show the virtual text in the buffer
 M.show_virtual_text = function()
   -- Change filtype format from "*.css" to "css"
   local filetypes = {}
@@ -69,22 +68,18 @@ M.show_virtual_text = function()
   })
 end
 
-
+--- Creates a virtual text for CSS variables
 M.create_virtual_text = function()
   local namespace = vim.api.nvim_create_namespace("cssvarviewer")
   local virtual_text = {}
 
   local line, line_content = cph.get_current_line_content()
-  local captured_cssvar = line_content:match('var%(.+%)')
-  if captured_cssvar then
-    local value = values_from_file[captured_cssvar:match('%((.+)%)')]
-    if value then
-      table.insert(virtual_text, value)
-    end
+  for captured_cssvar in line_content:gmatch('var%(%-%-[-_%w]*%)') do
+    local value = values_from_file[captured_cssvar:match('%((%-%-.+)%)')]
+    table.insert(virtual_text, value)
   end
-
+  -- Show the virtual text in the buffer
   cph.show_virtual_text(virtual_text, line, namespace)
 end
-
 
 return M
