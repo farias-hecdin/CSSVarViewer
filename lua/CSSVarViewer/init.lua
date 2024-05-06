@@ -1,30 +1,34 @@
 local M = {}
 local vim = vim
-local cfg = require('CSSVarViewer.misc.config')
 local cph = require('CSSPluginHelpers')
-
 local values_from_file = {}
-local search_opts = {
-  attempt_limit = "",
-  filename = "",
-  directory = ""
+local filetypes = 'css'
+
+-- Options table with default values
+M.options = {
+  -- <number> Parent search limit (number of levels to search upwards)
+  parent_search_limit = 5,
+  -- <string> Name of the file to track (e.g. "main" for main.css)
+  filename_to_track = "main",
+  -- <boolean> Indicates whether keymaps are disabled
+  disable_keymaps = false,
 }
 
 M.setup = function(options)
-  cfg.options = vim.tbl_deep_extend("keep", options or {}, cfg.options)
+  M.options = vim.tbl_deep_extend("keep", options or {}, M.options)
   -- Enable keymap if they are not disableds
-  if not cfg.options.disable_keymaps then
+  if not M.options.disable_keymaps then
     local keymaps_opts = {buffer = 0, silent = true}
     -- Create the keymaps for the specified filetypes
     vim.api.nvim_create_autocmd('FileType', {
       desc = 'CSSVarViewer keymaps',
-      pattern = 'css',
+      pattern = filetypes,
       callback = function()
         vim.keymap.set('n', '<leader>cv', ":CSSVarViewer<CR>", keymaps_opts)
+        vim.keymap.set('v', '<leader>cv', ":lua require('CSSVarViewer').paste_value()<CR>", keymaps_opts)
       end,
     })
   end
-  M.show_virtual_text()
 end
 
 --- Create a user command
@@ -33,11 +37,12 @@ vim.api.nvim_create_user_command("CSSVarViewer", function(args)
     args.fargs[1], args.fargs[2], args.fargs[3] = 1, args.fargs[1], args.fargs[2]
   end
 
-  search_opts.attempt_limit = tonumber(args.fargs[1] or cfg.options.parent_search_limit)
-  search_opts.fname = (args.fargs[2] or cfg.options.filename_to_track) .. ".css"
-  search_opts.fdir = args.fargs[3] or nil
+  local attempt_limit = tonumber(args.fargs[1] or M.options.parent_search_limit)
+  local fname = (args.fargs[2] or M.options.filename_to_track) .. ".css"
+  local fdir = args.fargs[3] or nil
 
-  M.get_cssvar_from_file(search_opts.attempt_limit, search_opts.fname, search_opts.fdir)
+  M.get_cssvar_from_file(attempt_limit, fname, fdir)
+  M.display_virtual_text()
 end, {desc = "Track the values of the CSS variables", nargs = "*"})
 
 --- Gets CSS variables from a file
@@ -53,33 +58,40 @@ M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
 end
 
 --- Show the virtual text in the buffer
-M.show_virtual_text = function()
-  -- Change filtype format from "*.css" to "css"
-  local filetypes = {}
-  for _, filetype in ipairs(cfg.options.filetypes) do
-    table.insert(filetypes, "*" .. filetype)
+M.display_virtual_text = function()
+  local function get_css_variables(namespace)
+    local variables = {}
+    local line, line_content = cph.get_current_line_content()
+
+    for captured_variable in line_content:gmatch('var%(%-%-[-_%w]*%)') do
+      local value = values_from_file[captured_variable:match('%((%-%-.+)%)')]
+      table.insert(variables, value)
+    end
+    -- Show the virtual text in the buffer
+    cph.show_virtual_text(variables, line, namespace)
   end
-  -- Create an autocomman to call the M.create_virtual_text() function
-  vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter", "CursorMoved", "CursorMovedI"}, {
+
+  local namespace = vim.api.nvim_create_namespace("cssvarviewer")
+  -- Create an autocommand to call the M.create_virtual_text() function
+  vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter", "CursorMoved"}, {
     pattern = filetypes,
     callback = function()
-      M.create_virtual_text()
+      get_css_variables(namespace)
     end,
   })
+  vim.print("[CSSVarViewer] The data has been updated. ".. os.date("%H:%M:%S"))
 end
 
---- Creates a virtual text for CSS variables
-M.create_virtual_text = function()
-  local namespace = vim.api.nvim_create_namespace("cssvarviewer")
-  local virtual_text = {}
-
-  local line, line_content = cph.get_current_line_content()
-  for captured_cssvar in line_content:gmatch('var%(%-%-[-_%w]*%)') do
-    local value = values_from_file[captured_cssvar:match('%((%-%-.+)%)')]
-    table.insert(virtual_text, value)
+--- Paste the value at the cursor selection
+M.paste_value = function()
+  local pos_text, select_text = cph.capture_visual_selection()
+  for key, value in pairs(values_from_file) do
+    if select_text and key == select_text[1]:match('%((%-%-.+)%)') then
+      select_text[1] = value
+      vim.print(string.format("[CSSVarViewer] You replaced '%s' with '%s'.", key, value))
+      cph.change_text(pos_text, select_text)
+    end
   end
-  -- Show the virtual text in the buffer
-  cph.show_virtual_text(virtual_text, line, namespace)
 end
 
 return M
