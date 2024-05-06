@@ -4,6 +4,8 @@ local cph = require('CSSPluginHelpers')
 local values_from_file = {}
 local filetypes = 'css'
 
+--- INFO: config section
+
 -- Options table with default values
 M.options = {
   -- <number> Parent search limit (number of levels to search upwards)
@@ -13,6 +15,8 @@ M.options = {
   -- <boolean> Indicates whether keymaps are disabled
   disable_keymaps = false,
 }
+
+--- INFO: init section
 
 M.setup = function(options)
   M.options = vim.tbl_deep_extend("keep", options or {}, M.options)
@@ -49,7 +53,7 @@ end, {desc = "Track the values of the CSS variables", nargs = "*"})
 M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
   local fpath = cph.find_file(fname, fdir, 1, attempt_limit)
   if not fpath then
-    vim.print("[CSSVarHighlight] Attempt limit reached. Operation cancelled.")
+    vim.print("[CSSVarViewer] Attempt limit reached. Operation cancelled.")
     return
   end
   -- Extract CSS attributes (variables) from the file
