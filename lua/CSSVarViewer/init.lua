@@ -2,7 +2,6 @@ local M = {}
 local vim = vim
 local cph = require('CSSPluginHelpers')
 local values_from_file = {}
-local filetypes = 'css'
 
 --- INFO: config section
 
@@ -26,7 +25,6 @@ M.setup = function(options)
     -- Create the keymaps for the specified filetypes
     vim.api.nvim_create_autocmd('FileType', {
       desc = 'CSSVarViewer keymaps',
-      pattern = filetypes,
       callback = function()
         vim.keymap.set('n', '<leader>cv', ":CSSVarViewer<CR>", keymaps_opts)
         vim.keymap.set('v', '<leader>cv', ":lua require('CSSVarViewer').paste_value()<CR>", keymaps_opts)
@@ -53,7 +51,7 @@ end, {desc = "Track the values of the CSS variables", nargs = "*"})
 M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
   local fpath = cph.find_file(fname, fdir, 1, attempt_limit)
   if not fpath then
-    vim.print("[CSSVarViewer] Attempt limit reached. Operation cancelled.")
+    vim.print("[CSSVarHighlight] Attempt limit reached. Operation cancelled.")
     return
   end
   -- Extract CSS attributes (variables) from the file
@@ -78,7 +76,7 @@ M.display_virtual_text = function()
   local namespace = vim.api.nvim_create_namespace("cssvarviewer")
   -- Create an autocommand to call the M.create_virtual_text() function
   vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter", "CursorMoved"}, {
-    pattern = filetypes,
+    pattern = "*.css",
     callback = function()
       get_css_variables(namespace)
     end,
