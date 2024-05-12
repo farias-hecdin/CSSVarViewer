@@ -1,3 +1,6 @@
+> [!TIP]
+> Use `Google Translate` to read this file in your native language.
+
 # CSSVarViewer
 
 Este plugin para **Neovim** te permite identificar fácilmente el valor de una variable CSS previamente definida en tus archivos de estilo, como `main.css` o `style.css`. Cuando el plugin detecta una variable CSS en estos archivos, la muestra en un texto virtual, lo que facilita su visualización desde cualquier otro archivo.
@@ -30,14 +33,14 @@ Usando [`folke/lazy.nvim`](https://github.com/folke/lazy.nvim):
 Estas son las opciones de configuración predeterminadas:
 
 ```lua
-M.options = {
+require('CSSVarViewer').setup({
   -- <number> Parent search limit (number of levels to search upwards)
   parent_search_limit = 5,
   -- <string> Name of the file to track (e.g. "main" for main.css)
   filename_to_track = "main",
   -- <boolean> Indicates whether keymaps are disabled
   disable_keymaps = false,
-}
+})
 ```
 
 ### Comandos y atajos de teclado
