@@ -1,14 +1,12 @@
-> [!TIP]
-> Use `Google Translate` to read this file in your native language.
+> Translate this file into your native language using `Google Translate` or a [similar service](https://immersivetranslate.com).
 
 # CSSVarViewer
 
-Este plugin para **Neovim** te permite identificar fácilmente el valor de una variable CSS previamente definida en tus archivos de estilo, como `main.css` o `style.css`. Cuando el plugin detecta una variable CSS en estos archivos, la muestra en un texto virtual, lo que facilita su visualización desde cualquier otro archivo.
+Este plugin para **Neovim** te permite identificar fácilmente el valor de las variables CSS que has definido previamente en tus archivos de estilo, como `main.css` o `style.css`. Cuando el plugin detecta una variable CSS en estos archivos, la muestra en un texto virtual, lo que facilita su visualización desde cualquier otro archivo.
 
-## Requerimientos
+## 🗒️ Requerimientos
 
 * [`Neovim`](https://github.com/neovim/neovim): Versión 0.7 o superior.
-* [`CSSPluginHelpers`](https://github.com/farias-hecdin/CSSPluginHelpers): Funciones esenciales para el plugin.
 
 ### Instalación
 
@@ -18,9 +16,6 @@ Usando [`folke/lazy.nvim`](https://github.com/folke/lazy.nvim):
 {
     'farias-hecdin/CSSVarViewer',
     ft = "css",
-    dependencies = {
-        "farias-hecdin/CSSPluginHelpers",
-    },
     config = true,
     -- If you want to configure some options, replace the previous line with:
     -- config = function()
@@ -28,7 +23,7 @@ Usando [`folke/lazy.nvim`](https://github.com/folke/lazy.nvim):
 }
 ```
 
-## Configuración
+## 🗒️ Configuración
 
 Estas son las opciones de configuración predeterminadas:
 
@@ -50,10 +45,14 @@ require('CSSVarViewer').setup({
 | `CSSVarViewer` | `Normal` | `<leader>cv`      | Activa el plugin y actualiza los datos |
 | `CSSVarViewer` | `Visual` | `<leader>cv`      | Pega el texto virtual en el cursor |
 
-Puedes ampliar la búsqueda de archivos hacia arriba o seleccionar otro archivo utilizando el comando `:CSSVarViewer`, similar a [`CSSVarHighlight`](https://github.com/farias-hecdin/CSSVarHighlight)
+Puedes ampliar la búsqueda de archivos hacia un directorio específico o analizar otros archivos utilizando el comando `:CSSVarViewer`, cuya sintaxis es la misma que la utilizada en [`CSSVarHighlight`](https://github.com/farias-hecdin/CSSVarHighlight#comandos-y-atajos-de-teclado). Es decir:
 
-Para pegar el valor del texto virtual en el cursor, selecciona la variable en modo visual (por ejemplo, `var(--primary-rgb)`) y luego oprime `<leader>cv` o utiliza el comando `:CSSVarViewer`.
+```sh
+:CSSVarViewer <filename> <attempt_limit | dir>
+```
 
-## Licencia
+Si deseas pegar el valor del texto virtual, selecciona la variable CSS en modo visual (por ejemplo, `var(--primary-rgb)`) y luego presiona `<leader>cv` o utiliza el comando `:CSSVarViewer`.
+
+## 🛡️ Licencia
 
 CSSVarViewer está bajo la licencia MIT. Consulta el archivo `LICENSE` para obtener más información.
