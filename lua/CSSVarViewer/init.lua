@@ -72,7 +72,9 @@ local display_virtual_text = function()
   vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter", "CursorMoved", "CursorHold"}, {
     pattern = "*.css",
     callback = function()
-      get_css_variables(namespace)
+      vim.schedule(function()
+        get_css_variables(namespace)
+      end)
     end,
   })
   vim.print("[CSSVarViewer] The data has been updated. " .. os.date("%H:%M:%S"))
