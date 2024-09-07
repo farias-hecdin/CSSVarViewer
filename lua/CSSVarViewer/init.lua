@@ -1,7 +1,7 @@
 local M = {}
-local gdt = require('CSSVarHighlight.get_data')
+local gdt = require('CSSVarViewer.get_data')
 local cfg = require('CSSVarViewer.config')
-local fos = require('CSSVarHighlight.file_ops')
+local fos = require('CSSVarViewer.file_ops')
 local stx = require('CSSVarViewer.select_text')
 local vrt = require('CSSVarViewer.virtual_text')
 
@@ -33,18 +33,18 @@ local function parse_args(args)
   local num_args = #args.fargs
 
   if num_args > 0 then
-    local arg1 = args.fargs[1]
-    if tonumber(arg1) then
-      attempt_limit = tonumber(arg1)
+    local arg1, numArg1 = args.fargs[1], tonumber(arg1)
+    if numArg1 then
+      attempt_limit = numArg1
     else
       fname = arg1
     end
   end
 
   if num_args > 1 then
-    local arg2 = args.fargs[2]
-    if tonumber(arg2) then
-      attempt_limit = tonumber(arg2)
+    local arg2, numArg2 = args.fargs[2], tonumber(arg2)
+    if numArg2 then
+      attempt_limit = numArg2
     else
       fdir = arg2
     end
@@ -83,9 +83,11 @@ end
 --- Paste the value at the cursor selection
 M.paste_value = function()
   local pos_text, select_text = stx.capture_visual_selection()
+  local first_seltext = select_text[1]
+
   for key, value in pairs(g_valuesFromFile) do
-    if select_text and key == select_text[1]:match('%((%-%-.+)%)') then
-      select_text[1] = value
+    if select_text and key == first_seltext:match('%((%-%-.+)%)') then
+      first_seltext = value
       vim.print(string.format("[CSSVarViewer] You replaced '%s' with '%s'.", key, value))
       stx.change_text(pos_text, select_text)
     end
