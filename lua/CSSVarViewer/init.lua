@@ -83,11 +83,10 @@ end
 --- Paste the value at the cursor selection
 M.paste_value = function()
   local pos_text, select_text = stx.capture_visual_selection()
-  local first_seltext = select_text[1]
 
   for key, value in pairs(g_valuesFromFile) do
-    if select_text and key == first_seltext:match('%((%-%-.+)%)') then
-      first_seltext = value
+    if select_text and key == select_text[1]:match('%((%-%-.+)%)') then
+      select_text[1] = value
       vim.print(string.format("[CSSVarViewer] You replaced '%s' with '%s'.", key, value))
       stx.change_text(pos_text, select_text)
     end
