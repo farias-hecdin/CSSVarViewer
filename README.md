@@ -4,6 +4,8 @@
 
 Este plugin para **Neovim** te permite identificar fácilmente el valor de las variables CSS que has definido previamente en tus archivos de estilo, como `main.css` o `style.css`. Cuando el plugin detecta una variable CSS en estos archivos, la muestra en un texto virtual, lo que facilita su visualización desde cualquier otro archivo.
 
+> La idea de este plugin es que centralices tus variables CSS en un solo archivo, para tener un mejor control a la hora de editar tus estilos.
+
 ## 🗒️ Requerimientos
 
 * [`Neovim`](https://github.com/neovim/neovim): Versión 0.7 o superior.
@@ -35,12 +37,15 @@ require('CSSVarViewer').setup({
 })
 ```
 
-### Comandos y atajos de teclado
+### Atajos de teclado
 
-| Comandos       | Modo     | Atajos de teclado | Descripción                         |
+| Comandos/API       | Modo     | Atajos de teclado | Descripción                         |
 | ---------------|----------|------------------ | ----------------------------------- |
-| `CSSVarViewer` | `Normal` | `<leader>cv`      | Activa el plugin y actualiza los datos |
-| `CSSVarViewer` | `Visual` | `<leader>cv`      | Pega el texto virtual en el cursor |
+| `CSSVarViewer` | `Normal` | `<leader>cv`      | Activa el plugin |
+| `paste_value()` | `Visual` | `<leader>cv`      | Pega el texto virtual en el cursor |
+
+>[!NOTE]
+> Para actualizar los datos, debes guardar el archivo que contiene tus variables CSS.
 
 Puedes ampliar la búsqueda de archivos hacia un directorio específico o analizar otros archivos utilizando el comando `:CSSVarViewer`, cuya sintaxis es la misma que la utilizada en [`CSSVarHighlight`](https://github.com/farias-hecdin/CSSVarHighlight#comandos-y-atajos-de-teclado). Es decir:
 
