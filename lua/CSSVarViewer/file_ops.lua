@@ -2,12 +2,17 @@ local M = {}
 
 --- Search for the file "*.css" in the current directory and parent directories.
 M.find_file = function(fname, dir, attempt, limit)
+  local escape_shell_arg = function(arg)
+    return "'" .. arg:gsub("'", "'\\''") .. "'"
+  end
+
   if not attempt or attempt > limit then
     return false
   end
 
   dir = dir or ""
-  local handle = io.popen("ls -1 " .. dir)
+  local escaped_dir = escape_shell_arg(dir)
+  local handle = io.popen("ls -1 " .. escaped_dir .. " 2>/dev/null")
   if not handle then
     return false
   end
