@@ -41,7 +41,7 @@ require('CSSVarViewer').setup({
 
 | Comandos/API       | Modo     | Atajos de teclado | Descripción                         |
 | ---------------|----------|------------------ | ----------------------------------- |
-| `CSSVarViewer` | `Normal` | `<leader>cv`      | Activa el plugin |
+| `CSSVarViewer` `toggle()` | `Normal` | `<leader>cv`      | Activa el plugin |
 | `paste_value()` | `Visual` | `<leader>cv`      | Pega el texto virtual en el cursor |
 
 >[!NOTE]
@@ -50,7 +50,7 @@ require('CSSVarViewer').setup({
 Puedes ampliar la búsqueda de archivos hacia un directorio específico o analizar otros archivos utilizando el comando `:CSSVarViewer`, cuya sintaxis es la misma que la utilizada en [`CSSVarHighlight`](https://github.com/farias-hecdin/CSSVarHighlight#comandos-y-atajos-de-teclado). Es decir:
 
 ```sh
-:CSSVarViewer <filename> <attempt_limit | dir>
+:CSSVarViewer <filename> <attempt_limit OR directory>
 ```
 
 Si deseas pegar el valor del texto virtual, selecciona la variable CSS en modo visual (por ejemplo, `var(--primary-rgb)`) y luego presiona `<leader>cv` o utiliza el comando `:CSSVarViewer`.

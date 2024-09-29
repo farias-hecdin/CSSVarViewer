@@ -5,8 +5,9 @@ local fos = require('CSSVarViewer.file_ops')
 local stx = require('CSSVarViewer.select_text')
 local vrt = require('CSSVarViewer.virtual_text')
 
+-- Cached variable
 local g_valuesFromFile = {}
-local g_lastFile, g_lastDir, g_lastLimit = nil, nil, nil
+local g_lastFile, g_lastDir = nil, nil
 local g_isPluginInitialized = false
 
 M.setup = function(options)
@@ -17,16 +18,19 @@ M.setup = function(options)
     vim.api.nvim_create_autocmd('FileType', {
       desc = 'CSSVarViewer keymaps',
       callback = function()
-        vim.keymap.set('n', '<leader>cv', ":CSSVarViewer<CR>", keymaps_opts)
+        vim.keymap.set('n', '<leader>cv', ":lua require('CSSVarViewer').toggle()<CR>", keymaps_opts)
         vim.keymap.set('v', '<leader>cv', ":lua require('CSSVarViewer').paste_value()<CR>", keymaps_opts)
       end,
     })
   end
 end
 
--- Analyze the arguments provided
+--- Toggle plugin
+M.toggle = function() vim.cmd('CSSVarViewer') end
+
+--- Analyze the arguments provided
 local function parse_args(args)
-  local attempt_limit = g_lastLimit or tonumber(cfg.options.parent_search_limit)
+  local attempt_limit = tonumber(cfg.options.parent_search_limit) - 1
   local fname = g_lastFile or cfg.options.filename_to_track
   local fdir = g_lastDir or nil
 
@@ -43,10 +47,12 @@ local function parse_args(args)
 
   if num_args > 1 then
     local arg2 = args.fargs[2]
-    if string.match(arg2, '^%d+$')  then
-      attempt_limit = tonumber(arg2)
+    if string.match(arg2, '^%d+$') then
+      attempt_limit = tonumber(arg2) < 0 and 0 or tonumber(arg2)
+      fdir = nil
     else
       fdir = arg2
+      attempt_limit = 0
     end
   end
 
@@ -96,7 +102,7 @@ end
 --- Create a user command
 vim.api.nvim_create_user_command("CSSVarViewer", function(args)
   local attempt_limit, fname, fdir = parse_args(args)
-  g_lastFile, g_lastDir, g_lastLimit = fname, fdir, attempt_limit
+  g_lastFile, g_lastDir = fname, fdir
 
   local data = M.get_cssvar_from_file(attempt_limit, fname .. ".css", fdir)
   if not data then

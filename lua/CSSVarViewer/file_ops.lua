@@ -1,41 +1,37 @@
 local M = {}
 
+local escape_shell_arg = function(arg)
+  return "'" .. arg:gsub("'", "'\\''") .. "'"
+end
+
 --- Search for the file "*.css" in the current directory and parent directories.
 M.find_file = function(fname, dir, attempt, limit)
-  local escape_shell_arg = function(arg)
-    return "'" .. arg:gsub("'", "'\\''") .. "'"
-  end
+  attempt = attempt or 1
+  dir = dir or "./"
 
-  if not attempt or attempt > limit then
-    return false
-  end
+  if dir:sub(-1) ~= "/" then dir = dir .. "/" end
 
-  dir = dir or ""
+  if attempt > limit then return false end
+
   local escaped_dir = escape_shell_arg(dir)
   local handle = io.popen("ls -1 " .. escaped_dir .. " 2>/dev/null")
-  if not handle then
-    return false
-  end
+  if not handle then return false end
 
-  local isAttemptOne = (attempt == 1)
   for file in handle:lines() do
     if file == fname then
       handle:close()
-      return dir .. (isAttemptOne and fname or "/" .. fname)
+      return dir .. (attempt == 1 and fname or "/" .. fname)
     end
   end
   handle:close()
 
-  dir = dir .. "../"
-  return M.find_file(fname, dir, attempt + 1, limit)
+  return M.find_file(fname, dir .. "../", attempt + 1, limit)
 end
 
 --- Open a file and return its contents
 M.open_file = function(fpath)
   local file = io.open(fpath, "r")
-  if not file then
-    return
-  end
+  if not file then return end
 
   local contents = {}
   for line in file:lines() do
@@ -46,7 +42,7 @@ M.open_file = function(fpath)
   return contents
 end
 
--- Capture file data
+--- Capture file data
 M.extract_from_file = function (content, pattern)
   local captured_data = {}
 
