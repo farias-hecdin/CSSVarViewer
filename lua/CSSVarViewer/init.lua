@@ -8,7 +8,6 @@ local vrt = require('CSSVarViewer.virtual_text')
 -- Cached variable
 local g_valuesFromFile = {}
 local g_lastFile, g_lastDir = nil, nil
-local g_isPluginInitialized = false
 
 M.setup = function(options)
   cfg.options = vim.tbl_deep_extend("keep", options or {}, cfg.options)
@@ -23,6 +22,13 @@ M.setup = function(options)
       end,
     })
   end
+  -- Event to auto-reload the data
+  vim.api.nvim_create_autocmd({"BufEnter", "BufWritePost"}, {
+    pattern = "*.css",
+    callback = function()
+      M.toggle()
+    end,
+  })
 end
 
 --- Toggle plugin
@@ -37,12 +43,7 @@ local function parse_args(args)
   local num_args = #args.fargs
 
   if num_args > 0 then
-    local arg1, numArg1 = args.fargs[1], tonumber(arg1)
-    if numArg1 then
-      attempt_limit = numArg1
-    else
-      fname = arg1
-    end
+    fname = args.fargs[1]
   end
 
   if num_args > 1 then
@@ -78,9 +79,7 @@ local display_virtual_text = function()
   vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter", "CursorMoved", "CursorHold"}, {
     pattern = "*.css",
     callback = function()
-      vim.schedule(function()
-        get_css_variables(namespace)
-      end)
+      vim.schedule(function() get_css_variables(namespace) end)
     end,
   })
   vim.print("[CSSVarViewer] The data has been updated. " .. os.date("%H:%M:%S"))
@@ -105,25 +104,14 @@ vim.api.nvim_create_user_command("CSSVarViewer", function(args)
   g_lastFile, g_lastDir = fname, fdir
 
   local data = M.get_cssvar_from_file(attempt_limit, fname .. ".css", fdir)
-  if not data then
-    return
-  end
-  display_virtual_text()
+  if not data then return end
 
-  -- Event to auto-reload the data
-  if g_isPluginInitialized then
-    vim.api.nvim_create_autocmd({"BufWritePost"}, {
-      pattern = "*.css",
-      callback = function()
-        vim.cmd('CSSVarViewer')
-      end,
-    })
-  end
+  display_virtual_text()
 end, {desc = "Track the values of the CSS variables", nargs = "*"})
 
 --- Gets CSS variables from a file
 M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
-  local fpath = fos.find_file(fname, fdir, 1, attempt_limit)
+  local fpath = fos.find_file(fname, fdir, 0, attempt_limit)
   if not fpath then
     vim.print("[CSSVarViewer] Attempt limit reached. Operation cancelled.")
     return false
@@ -131,7 +119,6 @@ M.get_cssvar_from_file = function(attempt_limit, fname, fdir)
   -- Extract CSS attributes (variables) from the file
   local data = gdt.get_css_attribute(fpath, "%-%-[-_%w]*")
   g_valuesFromFile = data
-  g_isPluginInitialized = true
   return true
 end
 

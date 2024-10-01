@@ -6,7 +6,6 @@ end
 
 --- Search for the file "*.css" in the current directory and parent directories.
 M.find_file = function(fname, dir, attempt, limit)
-  attempt = attempt or 1
   dir = dir or "./"
 
   if dir:sub(-1) ~= "/" then dir = dir .. "/" end
